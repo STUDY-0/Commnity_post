@@ -25,6 +25,11 @@ function Community() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (title.trim() === '' || content.trim() === '' || roomID.trim() === '') {
+      alert('모든 칸을 입력해주세요.');
+      return;
+    }
+    
     const firestore = getFirestore();
     
     // 해당 roomID가 이미 Firestore에 존재하는지 확인
@@ -102,14 +107,14 @@ function Community() {
             </button>
           </div>
         </div>
-        <div className={styles.post}>
+        {/* <div className={styles.post}>
           <h1 className={styles['post-title']}>ditto</h1>
           <p className={styles['post-writer']}>newjeans</p>
           <p className={styles['post-date']}>2323 / 13 / 01</p>
           <p className={styles['post-content']}>
             likeyouwantsomebody너를상상햇지항상닿아있던처음느낌그대로난
           </p>
-        </div>
+        </div> */}
       </div>
 
       {showModal && (
