@@ -164,8 +164,9 @@ outline: none;
     user-select: none;
 }
 
-.error {
+.errorMessage {
     color: red;
+    font-size: 12px;
 }
 
 /* tablet */

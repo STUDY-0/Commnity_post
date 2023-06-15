@@ -15,6 +15,7 @@ function Community() {
   const [content, setContent] = useState('');
   const [roomID, setRoomID] = useState('');
   const [roomIdError, setRoomIdError] = useState(false);
+  const [missingFieldsError, setMissingFieldsError] = useState(false);
 
   const openModal = () => {
     setShowModal(true);
@@ -24,37 +25,37 @@ function Community() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (title.trim() === '' || content.trim() === '' || roomID.trim() === '') {
-      alert('모든 칸을 입력해주세요.');
+      setMissingFieldsError(true);
       return;
     }
-    
+
     const firestore = getFirestore();
-    
+
     // 해당 roomID가 이미 Firestore에 존재하는지 확인
     const roomRef = doc(firestore, 'posts', roomID);
     const roomDoc = await getDoc(roomRef);
 
     if (roomDoc.exists()) {
       // 이미 존재하는 roomID인 경우 오류 처리
-      alert('해당 스터디룸 ID는 이미 존재합니다.');
       setRoomIdError(true);
-    } else {
-      // 존재하지 않는 roomID인 경우 데이터 추가
-      await setDoc(roomRef, {
-        title,
-        content,
-        roomID,
-      });
-
-      console.log('title : ' + title + ' content : ' + content + ' roomID : ' + roomID);
-      setTitle('');
-      setContent('');
-      setRoomID('');
-      setRoomIdError(false);
-      setShowModal(false);
+      return;
     }
+
+    await setDoc(roomRef, {
+      title,
+      content,
+      roomID,
+    });
+
+    console.log('title : ' + title + ' content : ' + content + ' roomID : ' + roomID);
+    setTitle('');
+    setContent('');
+    setRoomID('');
+    setRoomIdError(false);
+    setMissingFieldsError(false);
+    setShowModal(false);
   };
 
   const handleTitleChange = (e) => {
@@ -77,9 +78,14 @@ function Community() {
     const inputValue = e.target.value;
     const englishRegex = /^[a-zA-Z0-9]*$/;
     if (englishRegex.test(inputValue) && inputValue.length <= 20) {
+      setRoomIdError(false);
       setRoomID(inputValue);
+    } else {
+      setRoomIdError(true);
     }
   };
+
+  const roomIDInputStyles = roomIdError ? `${styles.inputError}` : '';
 
   return (
     <div className={styles.App}>
@@ -107,14 +113,6 @@ function Community() {
             </button>
           </div>
         </div>
-        {/* <div className={styles.post}>
-          <h1 className={styles['post-title']}>ditto</h1>
-          <p className={styles['post-writer']}>newjeans</p>
-          <p className={styles['post-date']}>2323 / 13 / 01</p>
-          <p className={styles['post-content']}>
-            likeyouwantsomebody너를상상햇지항상닿아있던처음느낌그대로난
-          </p>
-        </div> */}
       </div>
 
       {showModal && (
@@ -132,15 +130,23 @@ function Community() {
               value={content}
               onChange={handleContentChange}
             ></textarea>
-            <span className={styles.counter}>({wordCount}/200)</span><br></br>
-            <input
-              type="text"
-              placeholder="스터디룸 ID"
-              value={roomID}
-              onChange={handleRoomIDChange}
-            />
+            <span className={styles.counter}>({wordCount}/200)</span>
+            <br />
+            <div className={styles.roomIdContainer}>
+              <input
+                type="text"
+                placeholder="스터디룸 ID"
+                value={roomID}
+                onChange={handleRoomIDChange}
+                className={roomIDInputStyles}
+              />
+              {roomIdError && <p className={styles.errorMessage}>* 해당 스터디룸 ID는 이미 존재합니다.</p>}
+              {missingFieldsError && <p className={styles.errorMessage}>* 모든 칸을 입력해주세요.</p>}
+            </div>
             <div className={styles.buttonContainer}>
-              <button type="submit">Submit</button>
+              <button type="submit" disabled={roomIdError}>
+                Submit
+              </button>
             </div>
           </form>
         </div>
