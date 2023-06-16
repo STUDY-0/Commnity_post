@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import logo from '../../public/logo.png';
 import styles from '../styles/Community.module.css';
 import navStyles from '../styles/nav.module.css';
@@ -8,6 +8,7 @@ import { getFirestore, collection, setDoc } from 'firebase/firestore';
 import db from '../net/db';
 import Post from './post';
 import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/router';
 
 function Community() {
   const [showModal, setShowModal] = useState(false);
@@ -16,6 +17,24 @@ function Community() {
   const [roomID, setRoomID] = useState('');
   const [roomIdError, setRoomIdError] = useState(false);
   const [missingFieldsError, setMissingFieldsError] = useState(false);
+  const [posts, setPosts] = useState([]); // 배열로 포스트들을 관리
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const docRef = doc(db, 'articles', router.query.id);
+        const docSnap = await getDoc(docRef);
+        const data = docSnap.data();
+        setTitle(data.title);
+        setContent(data.content);
+      } catch (error) {
+        // 에러 처리
+      }
+    };
+
+    fetchData();
+  }, [router.query.id]);
 
   const openModal = () => {
     setShowModal(true);
@@ -56,6 +75,14 @@ function Community() {
     setRoomIdError(false);
     setMissingFieldsError(false);
     setShowModal(false);
+
+    // 새로운 포스트를 배열에 추가
+    const newPost = {
+      title,
+      content,
+      roomID,
+    };
+    setPosts([newPost, ...posts]);
   };
 
   const handleTitleChange = (e) => {
@@ -113,6 +140,14 @@ function Community() {
             </button>
           </div>
         </div>
+        <div className={styles.post}>
+          <h1 className={styles['post-title']}>ditto</h1>
+          <p className={styles['post-writer']}>newjeans</p>
+          <p className={styles['post-date']}>2323 / 13 / 01</p>
+          <p className={styles['post-content']}>
+            likeyouwantsomebody너를상상햇지항상닿아있던처음느낌그대로난
+          </p>
+        </div>
       </div>
 
       {showModal && (
@@ -152,7 +187,15 @@ function Community() {
         </div>
       )}
 
-      <index />
+      {/* Render the existing posts */}
+      {posts.map((post, index) => (
+        <Post
+          key={index}
+          title={post.title}
+          content={post.content}
+          roomID={post.roomID}
+        />
+      ))}
     </div>
   );
 }

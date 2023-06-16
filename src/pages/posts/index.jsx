@@ -1,16 +1,15 @@
-import Navbar from "@/components/Navbar";
+import Community from "./Community";
 import db from "@/net/db";
-import { doc, getDoc, onSnapshot, query, collection, orderBy, addDoc, where } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import styles from "../../../../styles/CommunityPost.module.css";
-import Community from "../Community";
+import styles from "../styles/Community.module.css";
 
 export default function Article() {
   const router = useRouter();
   const [subject, setSubject] = useState('');
-  const [content, setContent] = useState('');
-  const [comment, setComment] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [postContent, setPostContent] = useState('');
   const [list, setList] = useState([]);
 
   useEffect(() => {
@@ -19,8 +18,8 @@ export default function Article() {
         const docRef = doc(db, 'articles', router.query.id);
         const docSnap = await getDoc(docRef);
         const data = docSnap.data();
-        setSubject(data.subject);
-        setContent(data.content);
+        setSubject(data.title);
+        setPostContent(data.content);
       } catch (error) {
         // 에러 처리
       }
@@ -29,33 +28,41 @@ export default function Article() {
     fetchData();
   }, [router.query.id]);
 
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year} / ${month} / ${day}`;
+  };
+
+  // showModal, title, content, roomID를 받아와 출력
+  const { showModal, title, roomID } = router.query;
+
   return (
     <div>
       <Community />
-      <div className={styles.container}>
-        <div className={styles.postContainer}>
-          <div className={styles.post}>
-            <h1 className={styles.title}>{subject}</h1>
-            <hr className={styles.divider} />
-            <p className={styles.content}>{content}</p>
+      {showModal && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h2 className={styles.modalTitle}>{title}</h2>
+            <p className={styles.modalContent}>{postContent}</p>
+            <p className={styles.modalRoomID}>Room ID: {roomID}</p>
           </div>
         </div>
-        <div className={styles.comment}>
-          <div className={styles.commentsList}>
-            {list.map(item => (
-              <div key={item.id} className={styles.commentContainer}>
-                <p className={styles.commentText}>{item.comment}</p>
-                <hr className={styles.commentHr} />
-              </div>
-            ))}
-          </div>
-          <div className={styles.commentsContainer}>
-            <textarea className={styles.commentsInput} type='text' placeholder="댓글을 입력하세요"
-              value={comment} onChange={event => setComment(event.target.value)} />
-            <button className={styles.submitBtn} onClick={submit}>↖</button>
-          </div>
+      )}
+      <div className={styles.container}>
+        <div className={styles.postContainer}>
+          {showModal ? (
+            <div className={styles.post}>
+              <h1 className={styles['post-title']}>{subject}</h1>
+              <p className={styles['post-writer']}>{displayName}</p>
+              <p className={styles['post-date']}>{formatDate(new Date().getTime())}</p>
+              <p className={styles['post-content']}>{postContent}</p>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,3 +1,4 @@
+// 게시물 내용 표시
 import Community from "./Community";
 import db from "@/net/db";
 import { doc, getDoc } from "firebase/firestore";
@@ -41,17 +42,7 @@ export default function Article() {
 
   return (
     <div>
-      <Community/>
-      <div className={styles.container}>
-        <div className={styles.postContainer}>
-          <div className={styles.post}>
-            <h1 className={styles['post-title']}>{subject}</h1>
-            <p className={styles['post-writer']}>{displayName}</p>
-            <p className={styles['post-date']}>{formatDate(new Date().getTime())}</p>
-            <p className={styles['post-content']}>{postContent}</p>
-          </div>
-        </div>
-      </div>
+      <Community />
       {showModal && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>
@@ -61,6 +52,18 @@ export default function Article() {
           </div>
         </div>
       )}
+      <div className={styles.container}>
+        <div className={styles.postContainer}>
+          {showModal ? (
+            <div className={styles.post}>
+              <h1 className={styles['post-title']}>{subject}</h1>
+              <p className={styles['post-writer']}>{displayName}</p>
+              <p className={styles['post-date']}>{formatDate(new Date().getTime())}</p>
+              <p className={styles['post-content']}>{postContent}</p>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

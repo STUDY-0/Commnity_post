@@ -1,4 +1,4 @@
-// Post.js
+// 게시물 생성
 import React, { useState } from 'react';
 import styles from "../styles/Community.module.css";
 import { collection, addDoc } from 'firebase/firestore';
